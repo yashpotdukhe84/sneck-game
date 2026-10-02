@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Snake & Snack Arcade | Deluxe Edition</title>
+  <!-- Google Fonts for Arcade & Modern UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-bottom-right"></div>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="game-header">
+      <div class="logo-group">
+        <span class="logo-icon">🐍</span>
+        <div class="logo-text">
+          <h1>SNAKE <span class="accent-text">&amp; SNACK</span></h1>
+          <p class="subtitle">DELUXE ARCADE</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-sound" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">
+          <span class="icon">🔊</span>
+        </button>
+        <button id="btn-music" class="icon-btn" title="Toggle Retro Synth Music" aria-label="Toggle Music">
+          <span class="icon">🎵</span>
+        </button>
+        <button id="btn-skins" class="icon-btn" title="Customize Skins &amp; Snacks" aria-label="Skins">
+          <span class="icon">🎨</span>
+        </button>
+        <button id="btn-achievements" class="icon-btn" title="View Achievements" aria-label="Achievements">
+          <span class="icon">🏆</span>
+        </button>
+        <button id="btn-help" class="icon-btn" title="How to Play" aria-label="Instructions">
+          <span class="icon">❓</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Score & Stats Bar -->
+    <section class="stats-bar">
+      <div class="stat-card score-card">
+        <span class="stat-label">SCORE</span>
+        <span id="current-score" class="stat-value">0</span>
+      </div>
+
+      <div class="stat-card high-score-card">
+        <span class="stat-label">BEST <span class="trophy-emoji">👑</span></span>
+        <span id="high-score" class="stat-value">0</span>
+      </div>
+
+      <div class="stat-card length-card">
+        <span class="stat-label">LENGTH</span>
+        <span id="snake-length" class="stat-value">3</span>
+      </div>
+
+      <div class="stat-card combo-card" id="combo-container">
+        <span class="stat-label">COMBO</span>
+        <div class="combo-info">
+          <span id="combo-multiplier" class="combo-badge">x1</span>
+          <div class="combo-meter">
+            <div id="combo-fill" class="combo-fill"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Power-up Banner -->
+    <div id="active-powerup-bar" class="powerup-bar hidden">
+      <span id="powerup-icon" class="powerup-icon">⚡</span>
+      <div class="powerup-details">
+        <span id="powerup-name" class="powerup-title">SPEED BOOST</span>
+        <div class="powerup-progress-wrap">
+          <div id="powerup-progress" class="powerup-progress-fill"></div>
+        </div>
+      </div>
+      <span id="powerup-timer" class="powerup-time">5.0s</span>
+    </div>
+
+    <!-- Main Game Area -->
+    <main class="game-wrapper">
+      <div class="canvas-container" id="canvas-container">
+        <canvas id="game-canvas" width="600" height="600"></canvas>
+        
+        <!-- Overlay on canvas for Start / Pause -->
+        <div id="start-overlay" class="canvas-overlay">
+          <div class="overlay-card">
+            <div class="overlay-icon pulse-animation">🎮</div>
+            <h2 class="overlay-title">READY TO SNACK?</h2>
+            <p class="overlay-desc">Munch delicious snacks, grab special power-ups, and avoid hitting yourself or walls!</p>
+            
+            <div class="mode-selector">
+              <label class="mode-label">GAME MODE</label>
+              <div class="mode-buttons">
+                <button class="mode-btn active" data-mode="classic">CLASSIC</button>
+                <button class="mode-btn" data-mode="arcade">ARCADE 🔥</button>
+                <button class="mode-btn" data-mode="zen">ZEN 🧘</button>
+              </div>
+            </div>
+
+            <div class="difficulty-selector">
+              <label class="mode-label">SPEED DIFFICULTY</label>
+              <div class="diff-buttons">
+                <button class="diff-btn" data-speed="easy">EASY</button>
+                <button class="diff-btn active" data-speed="normal">NORMAL</button>
+                <button class="diff-btn" data-speed="hard">HARD</button>
+                <button class="diff-btn" data-speed="insane">INSANE</button>
+              </div>
+            </div>
+
+            <button id="btn-start" class="primary-btn glow-btn">
+              <span>PLAY NOW</span>
+              <kbd class="key-hint">SPACE</kbd>
+            </button>
+
+            <div class="quick-controls-hint">
+              <span>Controls: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>Arrow Keys</kbd> | Swipe on Mobile</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pause-overlay" class="canvas-overlay hidden">
+          <div class="overlay-card">
+            <h2 class="overlay-title">GAME PAUSED</h2>
+            <p class="overlay-desc">Catch your breath!</p>
+            <div class="overlay-buttons">
+              <button id="btn-resume" class="primary-btn glow-btn">RESUME (<kbd>SPACE</kbd>)</button>
+              <button id="btn-restart-paused" class="secondary-btn">RESTART</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Virtual Controls (Shown on Touch / Mobile Screens) -->
+    <div class="mobile-controls-wrapper" id="mobile-controls">
+      <div class="dpad-container">
+        <button class="dpad-btn dpad-up" data-dir="UP" aria-label="Up">▲</button>
+        <div class="dpad-middle-row">
+          <button class="dpad-btn dpad-left" data-dir="LEFT" aria-label="Left">◀</button>
+          <div class="dpad-center"></div>
+          <button class="dpad-btn dpad-right" data-dir="RIGHT" aria-label="Right">▶</button>
+        </div>
+        <button class="dpad-btn dpad-down" data-dir="DOWN" aria-label="Down">▼</button>
+      </div>
+      <div class="mobile-action-buttons">
+        <button id="btn-mobile-pause" class="mobile-action-btn">⏸️</button>
+        <button id="btn-mobile-restart" class="mobile-action-btn">🔄</button>
+      </div>
+    </div>
+
+    <!-- Quick Footer Info -->
+    <footer class="game-footer">
+      <div class="footer-tips">
+        <span>💡 <strong>Pro Tip:</strong> Eat quickly to trigger <strong>Combo Multipliers</strong> up to 5x!</span>
+      </div>
+      <div class="footer-keys">
+        <span><kbd>P</kbd> or <kbd>Space</kbd> Pause</span>
+        <span><kbd>R</kbd> Restart</span>
+        <span><kbd>M</kbd> Music</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="game-over-modal" class="modal-backdrop hidden">
+    <div class="modal-card game-over-card">
+      <div id="modal-trophy-badge" class="high-score-badge hidden">🏆 NEW RECORD!</div>
+      <h2 class="modal-heading game-over-heading">GAME OVER</h2>
+      <p id="game-over-cause" class="game-over-cause">You bit your own tail!</p>
+
+      <div class="score-highlight">
+        <span class="highlight-label">FINAL SCORE</span>
+        <span id="final-score" class="highlight-value">0</span>
+      </div>
+
+      <div class="game-stats-grid">
+        <div class="stats-item">
+          <span class="item-title">🍎 Snacks Eaten</span>
+          <span id="stat-snacks-eaten" class="item-value">0</span>
+        </div>
+        <div class="stats-item">
+          <span class="item-title">📏 Max Length</span>
+          <span id="stat-max-length" class="item-value">0</span>
+        </div>
+        <div class="stats-item">
+          <span class="item-title">⚡ Max Combo</span>
+          <span id="stat-max-combo" class="item-value">1x</span>
+        </div>
+        <div class="stats-item">
+          <span class="item-title">⏱️ Time Survived</span>
+          <span id="stat-time-survived" class="item-value">0:00</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-restart-gameover" class="primary-btn glow-btn">
+          <span>PLAY AGAIN</span>
+          <kbd class="key-hint">SPACE</kbd>
+        </button>
+        <button id="btn-share" class="secondary-btn">
+          <span>SHARE SCORE</span>
+          <span class="btn-icon">📋</span>
+        </button>
+      </div>
+      <div id="share-toast" class="toast hidden">Copied to clipboard! 🎮</div>
+    </div>
+  </div>
+
+  <!-- Customization / Skins Modal -->
+  <div id="skins-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-heading">CUSTOMIZE ARCADE</h2>
+        <button class="modal-close-btn" data-close="skins-modal">&times;</button>
+      </div>
+
+      <div class="customization-section">
+        <h3>Snake Skin</h3>
+        <div class="skins-grid" id="snake-skins-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="customization-section">
+        <h3>Snack Theme</h3>
+        <div class="snack-themes-grid" id="snack-themes-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="modal-actions single">
+        <button class="primary-btn" data-close="skins-modal">SAVE &amp; CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements Modal -->
+  <div id="achievements-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-heading">ACHIEVEMENTS</h2>
+        <button class="modal-close-btn" data-close="achievements-modal">&times;</button>
+      </div>
+      <p class="modal-subtitle">Earn badges as you master the snack arcade!</p>
+      
+      <div class="achievements-grid" id="achievements-list">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="modal-actions single">
+        <button class="primary-btn" data-close="achievements-modal">AWESOME!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions Modal -->
+  <div id="help-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-heading">HOW TO PLAY</h2>
+        <button class="modal-close-btn" data-close="help-modal">&times;</button>
+      </div>
+
+      <div class="help-section">
+        <h3>🎮 Controls</h3>
+        <ul class="help-list">
+          <li><strong>Desktop:</strong> Use <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> keys.</li>
+          <li><strong>Pause:</strong> Press <kbd>P</kbd> or <kbd>Spacebar</kbd>.</li>
+          <li><strong>Mobile / Touch:</strong> Swipe in any direction on screen or use the On-Screen D-Pad.</li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <h3>🍟 Delicious Snacks</h3>
+        <div class="snacks-legend">
+          <div class="legend-item"><span class="legend-emoji">🍎</span> <strong>Standard Snack:</strong> +10 Pts &amp; grows snake.</div>
+          <div class="legend-item"><span class="legend-emoji">🍕</span> <strong>Gourmet Slice:</strong> +25 Pts &amp; combo boost.</div>
+          <div class="legend-item"><span class="legend-emoji">🍩</span> <strong>Sweet Donut:</strong> +50 Pts &amp; extra rainbow sparkle.</div>
+          <div class="legend-item"><span class="legend-emoji">💎</span> <strong>Diamond Gem:</strong> +100 Pts ultra rare snack!</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>✨ Special Power-Ups (Arcade Mode)</h3>
+        <div class="powerup-legend">
+          <div class="legend-item"><span class="legend-emoji">⚡</span> <strong>Speed Surge:</strong> Temporary burst of speed and double points.</div>
+          <div class="legend-item"><span class="legend-emoji">👻</span> <strong>Ghost Mode:</strong> Phase through walls and even yourself safely!</div>
+          <div class="legend-item"><span class="legend-emoji">🧊</span> <strong>Freeze Time:</strong> Slows down game pace for relaxed navigation.</div>
+          <div class="legend-item"><span class="legend-emoji">✂️</span> <strong>Trim Snack:</strong> Snips your tail back by 3 segments!</div>
+        </div>
+      </div>
+
+      <div class="modal-actions single">
+        <button class="primary-btn" data-close="help-modal">GOT IT!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio synthesizers and Game Engine scripts -->
+  <script src="audio.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
